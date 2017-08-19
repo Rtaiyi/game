@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<style>
+			body{
+				background:black;
+			}
+			canvas{background: white;}
+		</style>
+		<script>
+			window.onload = function(){
+				var log = console.log.bind(console);
+				
+				// load image
+				var imageFromPath = function(path){
+					var img = new Image()
+					img.src = path;
+					return img;
+				}
+				
+				//set paddle data
+				var Paddle = function(){
+					var Img = imageFromPath('img/paddle.png/');
+					var o = {
+						img:Img,
+						x:100,
+						y:200,
+						speed:5,
+					}
+					var paddle = o;
+					o.moveLeft = function(){
+						this.x -= this.speed;
+					}
+					o.moveRight = function(){
+						this.x += this.speed;
+					}
+					
+					return o;
+				}
+				
+				
+				var GuaGame = function(){
+					var g = {
+						actions:{},
+						keydowns:{},
+					};
+					
+					var canvas = document.getElementById('id-canvas');
+					var context = canvas.getContext('2d');
+					
+					g.canvas = canvas;
+					g.context = context;
+					
+					//events
+					window.addEventListener('keydown',function(event){
+						g.keydowns[event.key] = true;
+					})
+					window.addEventListener('keyup',function(event){
+						g.keydowns[event.key] = false;
+					})
+					
+					//
+					g.registerAction = function(key,callback){
+						g.actions[key] = callback;
+					}
+					
+					
+					//timer
+					setInterval(function(){
+						//events
+						var actions = Object.keys(g.actions);
+						for(var i=0;i<actions.length;i++){
+							var key = actions[i];
+							if(g.keydowns[key]){
+								//如果按键被按下，调用注册的actions
+								g.actions[key]();
+							}
+						}
+						
+						//update
+						g.update();
+						
+						//clear
+						context.clearRect(0,0,canvas.width,canvas.height);
+						
+						//draw
+						g.draw();
+					},1000/60)
+					
+					return g;
+				}
+				
+				var _main = function(){
+					
+					var game = GuaGame();
+					
+					var paddle = Paddle();
+					
+					game.registerAction('ArrowLeft',function(){
+						paddle.moveLeft();
+					})
+					
+					game.registerAction('ArrowRight',function(){
+						paddle.moveRight();
+					})
+					
+					
+					game.update = function(){
+						
+					}
+					
+					game.draw = function(){
+						game.context.drawImage(paddle.img,paddle.x,paddle.y);
+					}
+					
+					
+				}
+					
+				_main();
+				
+				
+				
+				
+			
+			}
+		</script>
+		
+	</head>
+	<body>
+		<canvas id="id-canvas" width="400" height="300"></canvas>
+		
+	</body>
+</html>

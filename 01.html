@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<style>
+			body{
+				background:black;
+			}
+			canvas{background: white;}
+		</style>
+		<script>
+			window.onload = function(){
+				var log = console.log.bind(console);
+				var canvas = document.getElementById('id-canvas');
+				var context = canvas.getContext('2d');
+				
+
+				var img = new Image();
+				img.src = 'img/paddle.png/';
+				img.onload = function(){
+					context.drawImage(img,x,y);
+				}
+				
+				var img = new Image();
+				img.src = 'img/ball.pngg/';
+				img.onload = function(){
+					context.drawIamge(img,100,200);
+				}
+				
+				var x = 150;
+				var y = 200;
+				var speed =5;
+				
+				var leftDown = false;
+				var rightDown = false;
+				
+				//events
+				window.addEventListener('keydown',function(event){
+					log('keydown')
+					//log(event)
+					var k = event.keyCode;
+					
+					if(k == 37 ){
+						leftDown = true;
+					}else if(k == 39 ){
+						rightDown = true;
+					}
+					
+				})
+				
+				window.addEventListener('keyup',function(event){
+					var k = event.keyCode;
+					
+					if(k == 37 ){
+						leftDown = false;
+					}else if(k == 39 ){
+						rightDown = false;
+					}
+					
+				})
+				
+				setInterval(function(){
+					//update x
+					if(leftDown){
+						x -= speed;
+					}else if(rightDown){
+						x += speed;
+					}
+					
+					//clamp x
+					
+					
+					//draw
+					context.clearRect(0,0,canvas.width,canvas.height);
+					context.drawImage(img,x,y);
+					
+				},1000/60);
+			
+			}
+		</script>
+		
+	</head>
+	<body>
+		<canvas id="id-canvas" width="400" height="300"></canvas>
+		
+	</body>
+</html>
+

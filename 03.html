@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<style>
+			body{
+				background:#fff;
+			}
+			canvas{background:black;}
+		</style>
+		<script>
+			window.onload = function(){
+				var log = console.log.bind(console);
+				
+				// load image
+				var imageFromPath = function(path){
+					var img = new Image();
+					img.src = 'img/'+ path + '/';
+					return img;
+				}
+				
+				//set paddle data
+				var Paddle = function(){
+					var Img = imageFromPath('paddle.png');
+					var o = {
+						img:Img,
+						x:100,
+						y:250,
+						speed:10,
+					}
+					var paddle = o;
+					o.moveLeft = function(){
+						this.x -= this.speed;
+					}
+					o.moveRight = function(){
+						this.x += this.speed;
+					}
+					o.collide = function(ball){
+						if(ball.y + ball.img.height > o.y){
+							if(ball.x > o.x && ball.x < o.x + o.img.width){
+								return true;
+							}else{
+								return false;
+							}
+						}
+					}
+					
+					return o;
+				}
+				
+				//子弹
+				var Ball = function(){
+					var Img = imageFromPath('ball.png');
+					var o = {
+						img:Img,
+						x:100,
+						y:200,
+						speedX:5,
+						speedY:5,
+						fired:false,
+					}
+					
+					o.fire= function(){
+						o.fired = true;
+					}
+					o.move = function(){
+						if(o.fired){
+							//log('move');
+							if(o.x<0 || o.x >400 - o.img.width){
+								o.speedX = - o.speedX;
+							}
+							if(o.y<0 || o.y >300 - o.img.height){
+								o.speedY = -o.speedY;
+							}
+							
+							//move
+							o.x += o.speedX;
+							o.y += o.speedY;
+						}
+					}
+					
+					o.反弹 = function(){
+						o.speedY *= -1;
+					}
+					
+					return o;
+				}
+				
+				var Block = function(){
+					var Img = imageFromPath('block.png');
+					var o = {
+						img:Img,
+						x:100,
+						y:50,
+						w:50,
+						h:20,
+						alive:true,
+					}
+					
+					o.kill = function(){
+						o.alive = false;
+					}
+					
+					//未碰撞返回True，碰撞返回false
+					o.collide = function(ball){
+						
+						if(ball.y <o.y || ball.x<o.x || ball.x > o.x+o.img.width || ball.y > o.y + o.img.height){
+							return true;
+						}else{
+							return false;
+						}
+						
+					}
+					
+					return o;
+				}
+				
+				
+				var GuaGame = function(){
+					var g = {
+						actions:{},
+						keydowns:{},
+					};
+					
+					var canvas = document.getElementById('id-canvas');
+					var context = canvas.getContext('2d');
+					
+					g.canvas = canvas;
+					g.context = context;
+					
+					//draw
+					g.drawImage = function(guaImage){
+						g.context.drawImage(guaImage.img,guaImage.x,guaImage.y);
+						
+					}
+					
+					
+					//events
+					window.addEventListener('keydown',function(event){
+						g.keydowns[event.key] = true;
+					})
+					window.addEventListener('keyup',function(event){
+						g.keydowns[event.key] = false;
+					})
+					
+					//
+					g.registerAction = function(key,callback){
+						g.actions[key] = callback;
+					}
+					
+					
+					//timer
+					setInterval(function(){
+						//events
+						var actions = Object.keys(g.actions);
+						for(var i=0;i<actions.length;i++){
+							var key = actions[i];
+							if(g.keydowns[key]){
+								//如果按键被按下，调用注册的actions
+								g.actions[key]();
+							}
+						}
+						
+						//update
+						g.update();
+						
+						//clear
+						context.clearRect(0,0,canvas.width,canvas.height);
+						
+						//draw
+						g.draw();
+						
+					},1000/60)
+					
+					return g;
+				}
+				
+				var _main = function(){
+					
+					var game = GuaGame();
+					
+					var paddle = Paddle();
+					
+					var ball = Ball();
+					
+					var block = Block();
+					
+					//注册事件
+					game.registerAction('ArrowLeft',function(){
+						paddle.moveLeft();
+					})
+					
+					game.registerAction('ArrowRight',function(){
+						paddle.moveRight();
+					})
+					
+					game.registerAction('f',function(){
+						ball.fire();
+					})
+					
+					game.update = function(){
+						ball.move();
+						//碰撞检测 反弹
+						if(paddle.collide(ball)){
+							//这里调用一个ball.反弹()来实现
+							log('ball 相撞')
+							ball.反弹();
+						}
+						
+						//判断ball和block相撞
+						if(block.collide(ball) == false){
+							log('block 相撞')
+							block.kill();
+							ball.反弹();
+						}
+					}
+					
+					game.draw = function(){
+						
+						game.drawImage(paddle);
+						game.drawImage(ball);
+						
+						if(block.alive){
+							game.drawImage(block);
+						}
+						
+						
+					}
+					
+					
+				}
+					
+				_main();
+				
+			}
+		</script>
+	    	
+	</head>
+	<body>
+		<canvas id="id-canvas" width="400" height="300"></canvas>
+		
+	</body>
+</html>
